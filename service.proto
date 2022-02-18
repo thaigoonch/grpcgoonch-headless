@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package service;
+option go_package = "github.com/thaigoonch/grpcgoonch";
+
+
+message Message {
+  string body = 1;
+}
+
+service Service {
+  rpc SayHello(Message) returns (Message) {}
+}
