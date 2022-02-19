@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -18,51 +19,55 @@ type Server struct {
 
 func (s *Server) CryptoRequest(ctx context.Context, input *Request) (*DecryptedText, error) {
 	log.Printf("Received text from client: %s", input.Text)
-	log.Printf("Received key from client: %v", input.Key)
 
-	encrypted := encrypt(input.Key, input.Text)
-	result := decrypt(input.Key, encrypted)
+	encrypted, err := encrypt(input.Key, input.Text)
+	if err != nil {
+		return &DecryptedText{Result: ""},
+			fmt.Errorf("error during encryption: %v", err)
+	}
+	result, err := decrypt(input.Key, encrypted)
+	if err != nil {
+		return &DecryptedText{Result: ""},
+			fmt.Errorf("error during decryption: %v", err)
+	}
 
 	return &DecryptedText{Result: result}, nil
 }
 
-func encrypt(key []byte, text string) string {
+func encrypt(key []byte, text string) (string, error) {
 	plaintext := []byte(text)
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
+		return "", err
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
 
-	return base64.URLEncoding.EncodeToString(ciphertext)
+	return base64.URLEncoding.EncodeToString(ciphertext), nil
 }
 
-func decrypt(key []byte, cryptoText string) string {
+func decrypt(key []byte, cryptoText string) (string, error) {
 	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
 	if len(ciphertext) < aes.BlockSize {
-		panic("ciphertext too short")
+		return "", errors.New("ciphertext too short")
 	}
 	iv := ciphertext[:aes.BlockSize]
 	ciphertext = ciphertext[aes.BlockSize:]
-
 	stream := cipher.NewCFBDecrypter(block, iv)
-
-	// XORKeyStream can work in-place if the two arguments are the same.
 	stream.XORKeyStream(ciphertext, ciphertext)
 
-	return fmt.Sprintf("%v", ciphertext)
+	return fmt.Sprintf("%v", ciphertext), nil
 }

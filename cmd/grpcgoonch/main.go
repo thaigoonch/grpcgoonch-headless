@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	fmt.Println("grpcgoonch connecting...")
+	fmt.Println("grpcgoonch waiting for client requests...")
 	port := 9000
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
