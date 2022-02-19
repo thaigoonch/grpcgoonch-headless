@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
-	SayHello(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	CryptoRequest(ctx context.Context, in *Request, opts ...grpc.CallOption) (*DecryptedText, error)
 }
 
 type serviceClient struct {
@@ -33,9 +33,9 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 	return &serviceClient{cc}
 }
 
-func (c *serviceClient) SayHello(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
-	out := new(Message)
-	err := c.cc.Invoke(ctx, "/service.Service/SayHello", in, out, opts...)
+func (c *serviceClient) CryptoRequest(ctx context.Context, in *Request, opts ...grpc.CallOption) (*DecryptedText, error) {
+	out := new(DecryptedText)
+	err := c.cc.Invoke(ctx, "/service.Service/CryptoRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *serviceClient) SayHello(ctx context.Context, in *Message, opts ...grpc.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
-	SayHello(context.Context, *Message) (*Message, error)
+	CryptoRequest(context.Context, *Request) (*DecryptedText, error)
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -54,8 +54,8 @@ type ServiceServer interface {
 type UnimplementedServiceServer struct {
 }
 
-func (UnimplementedServiceServer) SayHello(context.Context, *Message) (*Message, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedServiceServer) CryptoRequest(context.Context, *Request) (*DecryptedText, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CryptoRequest not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -70,20 +70,20 @@ func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
 	s.RegisterService(&Service_ServiceDesc, srv)
 }
 
-func _Service_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Message)
+func _Service_CryptoRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ServiceServer).SayHello(ctx, in)
+		return srv.(ServiceServer).CryptoRequest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.Service/SayHello",
+		FullMethod: "/service.Service/CryptoRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).SayHello(ctx, req.(*Message))
+		return srv.(ServiceServer).CryptoRequest(ctx, req.(*Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +96,8 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _Service_SayHello_Handler,
+			MethodName: "CryptoRequest",
+			Handler:    _Service_CryptoRequest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

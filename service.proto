@@ -8,6 +8,15 @@ message Message {
   string body = 1;
 }
 
+message Request {
+  string text = 1;
+  string key = 2;
+}
+
+message DecryptedText {
+  string result = 1;
+}
+
 service Service {
-  rpc SayHello(Message) returns (Message) {}
+  rpc CryptoRequest(Request) returns (DecryptedText) {}
 }
