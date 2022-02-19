@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpcgoonch
+  labels:
+    app: grpcgoonch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpcgoonch
+  template:
+    metadata:
+      labels:
+        app: grpcgoonch
+    spec:
+      containers:
+      - name: app
+        image: thaigoonch/grpcgoonch
