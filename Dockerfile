@@ -13,4 +13,4 @@ RUN DEBIAN_FRONTEND=noninteractive \
     ./generate.sh && \
     CGO_ENABLED=0 GOOS=linux \
     go build -a -o binary ./cmd/grpcgoonch
-CMD ["./grpcgoonch"]
+CMD ["/bin/go/grpcgoonch"]
