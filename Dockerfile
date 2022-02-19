@@ -1,8 +1,16 @@
-FROM golang:1.17-alpine AS builder
+FROM golang:1.17 AS builder
 WORKDIR /app
 COPY . /app
-RUN chmod +x ./generate.sh && \
-    /bin/sh ./generate.sh && \
+
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt update && \
+    apt install -y protobuf-compiler && \
+    GO111MODULE=on \
+    go get google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1 \
+    google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2.0 && \
+    export PATH="$PATH:$(go env GOPATH)/bin" && \
+    chmod +x ./generate.sh && \
+    ./generate.sh && \
     CGO_ENABLED=0 GOOS=linux \
     go build -a -o binary ./cmd/grpcgoonch
 CMD ["./grpcgoonch"]
