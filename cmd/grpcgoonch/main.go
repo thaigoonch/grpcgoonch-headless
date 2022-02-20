@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	grpcgoonch "github.com/thaigoonch/grpcgoonch/service"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/grpclog"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 	port := 9000
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		log.Fatalf("Failed to listen on port %d: %v", port, err)
+		grpclog.Fatalf("Failed to listen on port %d: %v", port, err)
 	}
 
 	s := grpcgoonch.Server{}
@@ -23,6 +23,6 @@ func main() {
 	grpcgoonch.RegisterServiceServer(grpcServer, &s)
 
 	if err := grpcServer.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve gRPC server over port %d: %v", port, err)
+		grpclog.Fatalf("Failed to serve gRPC server over port %d: %v", port, err)
 	}
 }

@@ -12,4 +12,5 @@ RUN apt update ; \
     chmod +x ./generate.sh ; \
     ./generate.sh && \
     go install ./...
-CMD ["/go/bin/grpcgoonch"]
+ENTRYPOINT ["/go/bin/grpcgoonch"]
+EXPOSE 9000

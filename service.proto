@@ -3,11 +3,6 @@ syntax = "proto3";
 package service;
 option go_package = "github.com/thaigoonch/grpcgoonch";
 
-
-message Message {
-  string body = 1;
-}
-
 message Request {
   string text = 1;
   bytes key = 2;
