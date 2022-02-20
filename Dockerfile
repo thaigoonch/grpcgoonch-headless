@@ -1,6 +1,8 @@
-FROM golang:1.17 AS builder
+FROM golang:1.17
 WORKDIR /app
 COPY . /app
+
+ENV GOOS=linux
 
 RUN DEBIAN_FRONTEND=noninteractive \
     apt update && \
@@ -11,6 +13,5 @@ RUN DEBIAN_FRONTEND=noninteractive \
     export PATH="$PATH:$(go env GOPATH)/bin" && \
     chmod +x ./generate.sh && \
     ./generate.sh && \
-    CGO_ENABLED=0 GOOS=linux \
-    go build -a -o binary ./cmd/grpcgoonch
+    go install ./...
 CMD ["/bin/go/grpcgoonch"]
