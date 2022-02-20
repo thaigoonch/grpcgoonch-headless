@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grpcgoonch
+  name: grpcgoonch-deployment
   labels:
     app: grpcgoonch
 spec:
@@ -15,5 +15,19 @@ spec:
         app: grpcgoonch
     spec:
       containers:
-      - name: app
+      - name: grpcgoonch
         image: thaigoonch/grpcgoonch
+        ports:
+        - containerPort: 9000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: grpcgoonch-service
+spec:
+  selector:
+    app: grpcgoonch
+  ports:
+    - protocol: TCP
+      port: 9000
+  type: LoadBalancer
