@@ -14,6 +14,7 @@ spec:
       labels:
         app: grpcgoonch
     spec:
+      hostname: grpcgoonch-service
       containers:
       - name: grpcgoonch
         image: thaigoonch/grpcgoonch
