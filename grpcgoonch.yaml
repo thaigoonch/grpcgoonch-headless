@@ -5,7 +5,7 @@ metadata:
   labels:
     app: grpcgoonch
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: grpcgoonch
@@ -14,10 +14,9 @@ spec:
       labels:
         app: grpcgoonch
     spec:
-      hostname: grpcgoonch-service
       containers:
       - name: grpcgoonch
-        image: thaigoonch/grpcgoonch
+        image: thaigoonch/grpcgoonch:1.0
         ports:
         - containerPort: 9000
 ---
