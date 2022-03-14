@@ -27,9 +27,6 @@ metadata:
 spec:
   selector:
     app: grpcgoonch
-  ports:
-    - protocol: TCP
-      port: 9000
   type: ClusterIP
   clusterIP: None
   ports:
