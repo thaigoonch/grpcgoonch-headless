@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
 
 	grpcgoonch "github.com/thaigoonch/grpcgoonch/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
+	"google.golang.org/grpc/keepalive"
 )
 
 func main() {
@@ -19,7 +21,9 @@ func main() {
 
 	s := grpcgoonch.Server{}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
+		MaxConnectionAge: time.Minute * 6,
+	}))
 	grpcgoonch.RegisterServiceServer(grpcServer, &s)
 
 	if err := grpcServer.Serve(lis); err != nil {
