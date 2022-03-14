@@ -32,3 +32,6 @@ spec:
       port: 9000
   type: ClusterIP
   clusterIP: None
+  ports:
+    - port: 80
+      targetPort: 9000
