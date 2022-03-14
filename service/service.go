@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"golang.org/x/net/context"
 )
@@ -31,6 +32,7 @@ func (s *Server) CryptoRequest(ctx context.Context, input *Request) (*DecryptedT
 			fmt.Errorf("error during decryption: %v", err)
 	}
 
+	time.Sleep(4 * time.Second)
 	return &DecryptedText{Result: result}, nil
 }
 
