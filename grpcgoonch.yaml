@@ -31,4 +31,4 @@ spec:
     - protocol: TCP
       port: 9000
   type: ClusterIP
-  ClusterIP: none
+  clusterIP: None
