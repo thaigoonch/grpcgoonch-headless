@@ -19,6 +19,12 @@ spec:
         image: thaigoonch/grpcgoonch:1.3
         ports:
         - containerPort: 9000
+        resources:
+          requests:
+            memory: "100Mi"
+          limits:
+            cpu: "20m"
+            memory: "100Mi"
 ---
 kind: Service
 apiVersion: v1
