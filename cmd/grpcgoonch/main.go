@@ -2,14 +2,32 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"net/http"
 	"time"
 
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	grpcgoonch "github.com/thaigoonch/grpcgoonch/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/keepalive"
 )
+
+var (
+	reg                 = prometheus.NewRegistry()
+	grpcMetrics         = grpc_prometheus.NewServerMetrics()
+	customMetricCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "grpcgoonch_server_handle_count",
+		Help: "Total number of RPCs handled on the server.",
+	}, []string{"name"})
+)
+
+func init() {
+	reg.MustRegister(grpcMetrics, customMetricCounter)
+}
 
 func main() {
 	fmt.Println("grpcgoonch waiting for client requests...")
@@ -19,12 +37,27 @@ func main() {
 		grpclog.Fatalf("Failed to listen on port %d: %v", port, err)
 	}
 
-	s := grpcgoonch.Server{}
+	// Create an http server for prometheus
+	httpServer := &http.Server{
+		Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
+		Addr:    fmt.Sprintf("0.0.0.0:%d", 9092)}
 
-	grpcServer := grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionAge: time.Minute * 6,
-	}))
+	// Create a gRPC server
+	s := grpcgoonch.Server{}
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(grpcMetrics.UnaryServerInterceptor()),
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionAge: time.Minute * 6,
+		}))
 	grpcgoonch.RegisterServiceServer(grpcServer, &s)
+	grpcMetrics.InitializeMetrics(grpcServer)
+
+	// Start http server for prometheus
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil {
+			log.Fatal("Unable to start an http server.")
+		}
+	}()
 
 	if err := grpcServer.Serve(lis); err != nil {
 		grpclog.Fatalf("Failed to serve gRPC server over port %d: %v", port, err)
