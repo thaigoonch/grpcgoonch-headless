@@ -23,7 +23,7 @@ spec:
           requests:
             memory: "600Mi"
           limits:
-            cpu: "1.2"
+            cpu: "0.8"
             memory: "600Mi"
       nodeSelector:
         goonchrole: "server"
