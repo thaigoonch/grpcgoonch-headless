@@ -36,6 +36,8 @@ kind: Service
 apiVersion: v1
 metadata:
   name: grpcgoonch-service
+  labels:
+    app: grpcgoonch
 spec:
   selector:
     app: grpcgoonch
