@@ -63,4 +63,4 @@ spec:
       app: grpcgoonch # target service
       release: prometheus
   endpoints:
-  - port: metrics
+  - port: prometheusport
