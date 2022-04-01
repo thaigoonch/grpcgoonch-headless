@@ -54,9 +54,12 @@ metadata:
   name: grpcgoonch-servicemonitor
   # Change this to the namespace the Prometheus instance is running in
   namespace: default
+  labels:
+    app: grpcgoonch
+    release: prometheus
 spec:
   selector:
     matchLabels:
-      app: grpcgoonch # target service
+      app: grpcgoonch # target gitlab service
   endpoints:
-  - port: prometheusport
+  - port: metrics
