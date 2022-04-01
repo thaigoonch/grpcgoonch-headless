@@ -17,6 +17,8 @@ import (
 )
 
 var (
+	grpcPort            = 9000
+	promPort            = 2112
 	reg                 = prometheus.NewRegistry()
 	grpcMetrics         = grpc_prometheus.NewServerMetrics()
 	customMetricCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
@@ -27,20 +29,23 @@ var (
 
 func init() {
 	reg.MustRegister(grpcMetrics, customMetricCounter)
+	_, err := reg.Gather()
+	if err != nil {
+		log.Fatalf("Prometheus metric registration error: %v", err)
+	}
 }
 
 func main() {
 	fmt.Println("grpcgoonch waiting for client requests...")
-	port := 9000
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
 	if err != nil {
-		grpclog.Fatalf("Failed to listen on port %d: %v", port, err)
+		grpclog.Fatalf("Failed to listen on port %d: %v", grpcPort, err)
 	}
 
 	// Create an http server for prometheus
 	httpServer := &http.Server{
 		Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
-		Addr:    fmt.Sprintf("0.0.0.0:%d", port)}
+		Addr:    fmt.Sprintf(":%d", promPort)}
 
 	// Create a gRPC server
 	s := grpcgoonch.Server{}
@@ -55,11 +60,11 @@ func main() {
 	// Start http server for prometheus
 	go func() {
 		if err := httpServer.ListenAndServe(); err != nil {
-			log.Fatal("Unable to start an http server.")
+			log.Fatalf("Unable to start an http server on port %d: %v", promPort, err)
 		}
 	}()
 
 	if err := grpcServer.Serve(lis); err != nil {
-		grpclog.Fatalf("Failed to serve gRPC server over port %d: %v", port, err)
+		grpclog.Fatalf("Failed to serve gRPC server over port %d: %v", grpcPort, err)
 	}
 }
