@@ -43,3 +43,17 @@ spec:
   ports:
     - port: 80
       targetPort: 9000
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: grpcgoonch-servicemonitor
+  # Change this to the namespace the Prometheus instance is running in
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: grpcgoonch # target service
+  endpoints:
+  - port: 9000
+    interval: 30s
