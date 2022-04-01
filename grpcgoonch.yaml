@@ -60,6 +60,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: grpcgoonch # target gitlab service
+      app: grpcgoonch # target service
+      release: prometheus
   endpoints:
   - port: metrics
