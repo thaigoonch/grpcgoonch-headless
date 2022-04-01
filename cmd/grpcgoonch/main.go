@@ -21,7 +21,7 @@ var (
 	grpcMetrics         = grpc_prometheus.NewServerMetrics()
 	customMetricCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "grpcgoonch_server_handle_count",
-		Help: "Total number of RPCs handled on the server.",
+		Help: "Total number of RPCs handled on the goonch server.",
 	}, []string{"name"})
 )
 
@@ -40,7 +40,7 @@ func main() {
 	// Create an http server for prometheus
 	httpServer := &http.Server{
 		Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
-		Addr:    fmt.Sprintf("0.0.0.0:%d", 9092)}
+		Addr:    fmt.Sprintf("0.0.0.0:%d", port)}
 
 	// Create a gRPC server
 	s := grpcgoonch.Server{}
