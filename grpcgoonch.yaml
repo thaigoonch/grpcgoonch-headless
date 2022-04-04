@@ -14,7 +14,7 @@ spec:
       labels:
         app: grpcgoonch
       annotations:
-        prometheus.io/port: '2112'
+        prometheus.io/port: '9092'
         prometheus.io/scrape: 'true'
     spec:
       containers:
