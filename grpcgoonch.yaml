@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: grpcgoonch
-        image: thaigoonch/grpcgoonch:1.7
+        image: thaigoonch/grpcgoonch:1.8
         ports:
         - name: serviceport
           containerPort: 9000
@@ -48,7 +48,7 @@ spec:
     port: 80
     targetPort: 9000
   - name: prometheusport
-    port: 2112
+    port: 9092
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -64,4 +64,4 @@ spec:
     matchLabels:
       app: grpcgoonch # target service
   endpoints:
-  - port: serviceport
+  - port: prometheusport

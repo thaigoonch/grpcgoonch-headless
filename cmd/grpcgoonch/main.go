@@ -18,7 +18,7 @@ import (
 
 var (
 	grpcPort            = 9000
-	promPort            = 2112
+	promPort            = 9092
 	reg                 = prometheus.NewRegistry()
 	grpcMetrics         = grpc_prometheus.NewServerMetrics()
 	customMetricCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
