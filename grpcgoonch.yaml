@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: grpcgoonch
-        image: thaigoonch/grpcgoonch:1.10
+        image: thaigoonch/grpcgoonch:1.11
         ports:
         - name: serviceport
           containerPort: 9000
