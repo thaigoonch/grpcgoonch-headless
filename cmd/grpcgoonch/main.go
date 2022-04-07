@@ -52,8 +52,9 @@ func main() {
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(grpcMetrics.UnaryServerInterceptor()),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionAge: time.Minute * 6,
-		}))
+			MaxConnectionAge: time.Minute * 2,
+		}),
+	)
 	grpcgoonch.RegisterServiceServer(grpcServer, &s)
 	grpcMetrics.InitializeMetrics(grpcServer)
 
