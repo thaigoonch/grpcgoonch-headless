@@ -1,12 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
-go mod vendor
-
-protoc \
-    -I. \
-    -I/include/proto \
+protoc.sh \
     --go_out=service \
     --proto_path=$(pwd) \
     --go_opt=paths=source_relative \
