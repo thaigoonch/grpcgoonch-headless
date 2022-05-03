@@ -1,4 +1,4 @@
-FROM sharkbuild1 AS shark
+FROM thaigoonch/sharkbuild:1.0 AS shark
 WORKDIR /app
 COPY . /app
 
