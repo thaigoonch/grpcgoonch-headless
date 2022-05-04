@@ -1,4 +1,4 @@
-package grpcgoonch
+package grpcgoonchheadless
 
 import (
 	"crypto/aes"
