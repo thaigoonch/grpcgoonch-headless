@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: grpcgoonch-headless
-        image: thaigoonch/grpcgoonch-headless:1.0
+        image: thaigoonch/grpcgoonch-headless:1.1
         ports:
         - name: serviceport
           containerPort: 9000
