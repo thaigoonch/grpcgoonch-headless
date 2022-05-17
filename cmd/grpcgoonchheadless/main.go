@@ -1,7 +1,13 @@
 package main
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -11,28 +17,90 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	grpcgoonch "github.com/thaigoonch/grpcgoonch-headless/service"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/keepalive"
 )
 
 var (
-	grpcPort            = 9000
-	promPort            = 9092
-	reg                 = prometheus.NewRegistry()
-	grpcMetrics         = grpc_prometheus.NewServerMetrics()
-	customMetricCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
+	grpcPort     = 9000
+	promPort     = 9092
+	reg          = prometheus.NewRegistry()
+	grpcMetrics  = grpc_prometheus.NewServerMetrics()
+	grpcReqCount = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "grpcgoonchheadless_server_handle_count",
 		Help: "Total number of RPCs handled on the goonch server.",
-	}, []string{"name"})
+	})
 )
 
+type Server struct {
+	grpcgoonch.ServiceServer
+}
+
 func init() {
-	reg.MustRegister(grpcMetrics, customMetricCounter)
+	reg.MustRegister(grpcMetrics, grpcReqCount)
 	_, err := reg.Gather()
 	if err != nil {
 		log.Fatalf("Prometheus metric registration error: %v", err)
 	}
+}
+
+func (s *Server) CryptoRequest(ctx context.Context, input *grpcgoonch.Request) (*grpcgoonch.DecryptedText, error) {
+	log.Printf("Received text from client: %s", input.Text)
+
+	encrypted, err := encrypt(input.Key, input.Text)
+	if err != nil {
+		return &grpcgoonch.DecryptedText{Result: ""},
+			fmt.Errorf("error during encryption: %v", err)
+	}
+	result, err := decrypt(input.Key, encrypted)
+	if err != nil {
+		return &grpcgoonch.DecryptedText{Result: ""},
+			fmt.Errorf("error during decryption: %v", err)
+	}
+
+	grpcReqCount.Inc() // increment prometheus metric
+	time.Sleep(4 * time.Second)
+	return &grpcgoonch.DecryptedText{Result: result}, nil
+}
+
+func encrypt(key []byte, text string) (string, error) {
+	plaintext := []byte(text)
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return "", err
+	}
+
+	stream := cipher.NewCFBEncrypter(block, iv)
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
+
+	return base64.URLEncoding.EncodeToString(ciphertext), nil
+}
+
+func decrypt(key []byte, cryptoText string) (string, error) {
+	ciphertext, _ := base64.URLEncoding.DecodeString(cryptoText)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	if len(ciphertext) < aes.BlockSize {
+		return "", errors.New("ciphertext too short")
+	}
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+	stream := cipher.NewCFBDecrypter(block, iv)
+	stream.XORKeyStream(ciphertext, ciphertext)
+
+	return fmt.Sprintf("%v", ciphertext), nil
 }
 
 func main() {
@@ -48,7 +116,7 @@ func main() {
 		Addr:    fmt.Sprintf(":%d", promPort)}
 
 	// Create a gRPC server
-	s := grpcgoonch.Server{}
+	s := Server{}
 	grpcServer := grpc.NewServer(
 		grpc.UnaryInterceptor(grpcMetrics.UnaryServerInterceptor()),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
