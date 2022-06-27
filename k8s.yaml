@@ -13,13 +13,10 @@ spec:
     metadata:
       labels:
         app: grpcgoonch-headless
-      annotations:
-        prometheus.io/port: '9092'
-        prometheus.io/scrape: 'true'
     spec:
       containers:
       - name: grpcgoonch-headless
-        image: thaigoonch/grpcgoonch-headless:1.2
+        image: thaigoonch/grpcgoonch-headless:1.3
         ports:
         - name: serviceport
           containerPort: 9000
